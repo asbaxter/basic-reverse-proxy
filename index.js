@@ -23,11 +23,14 @@ app.use(express.json());
 app.post("/postRequest", authenticateApiKey, async (req, res) => {
   try {
     // Get the request IP
-    const requestIP =
-      req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const requestIP = req.socket.remoteAddress;
+    const localIP = req.socket.localAddress;
 
-    console.log(`Request from IP: ${requestIP}`);
-    console.log(`Request body: ${JSON.stringify(req.body)}`);
+    console.log(" ");
+    console.log(`Request IP: ${requestIP}`);
+    console.log(`Local IP: ${localIP}`);
+    console.log(`Forwarding URL: ${TARGET_API_URL}`);
+    console.log(" ");
 
     // Forward the request body to the target API
     const response = await axios.post(TARGET_API_URL, req.body, {
@@ -45,4 +48,4 @@ app.post("/postRequest", authenticateApiKey, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server is running on ${PORT}`));
+app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
