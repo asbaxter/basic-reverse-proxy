@@ -22,12 +22,21 @@ app.use(express.json());
 
 app.post("/postRequest", authenticateApiKey, async (req, res) => {
   try {
+    // Get the request IP
+    const requestIP =
+      req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+    console.log(`Request from IP: ${requestIP}`);
+    console.log(`Request body: ${JSON.stringify(req.body)}`);
+
     // Forward the request body to the target API
     const response = await axios.post(TARGET_API_URL, req.body, {
       headers: {
         "Content-Type": "application/json",
       },
     });
+
+    console.log(`Server Response: ${JSON.stringify(response.data)}`);
 
     res.status(response.status).json(response.data);
   } catch (error) {
