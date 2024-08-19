@@ -10,10 +10,12 @@ const TARGET_API_URL = process.env.TARGET_API_URL;
 
 const authenticateApiKey = (req, res, next) => {
   const apiKey = req.headers["x-api-key"];
+  const requestIP = req.socket.remoteAddress;
 
   if (apiKey && apiKey === API_KEY) {
     next();
   } else {
+    console.log(`Unauthorized Request IP: ${requestIP}`);
     res.status(401).json({ message: "Unauthorized" });
   }
 };
