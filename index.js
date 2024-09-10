@@ -17,7 +17,7 @@ const logger = winston.createLogger({
       datePattern: "YYYY-MM-DD",
       zippedArchive: true,
       maxFiles: "60d",
-      dirname: "/basic-reverse-proxy/logs",
+      dirname: process.env.LOGS_PATH,
     }),
   ],
 });
@@ -35,6 +35,7 @@ const limiter = rateLimit({
 });
 
 const app = express();
+app.set("trust proxy", 1);
 
 const PORT = process.env.PORT;
 const API_KEY = process.env.API_KEY;
