@@ -1,6 +1,34 @@
 const express = require("express");
 require("dotenv").config();
 const axios = require("axios");
+const rateLimit = require("express-rate-limit");
+const winston = require("winston");
+
+// Winston logger configuration
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({
+      filename: "proxy.log",
+    }),
+  ],
+});
+
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    const requestIP = req.socket.remoteAddress;
+    logger.warn(`Rate limit exceeded for IP: ${requestIP}`);
+    res.status(options.statusCode).send(options.message);
+  },
+});
 
 const app = express();
 
@@ -15,39 +43,32 @@ const authenticateApiKey = (req, res, next) => {
   if (apiKey && apiKey === API_KEY) {
     next();
   } else {
-    console.log(`Unauthorized Request IP: ${requestIP}`);
+    logger.warn(`Unauthorized Request IP: ${requestIP}`); // Log unauthorized attempts
     res.status(401).json({ message: "Unauthorized" });
   }
 };
 
 app.use(express.json());
+app.use(limiter);
 
-app.post("/postRequest", authenticateApiKey, async (req, res) => {
+app.post("/post", authenticateApiKey, async (req, res) => {
   try {
-    // Get the request IP
-    const requestIP = req.socket.remoteAddress;
-    const localIP = req.socket.localAddress;
-
-    console.log(" ");
-    console.log(`Request IP: ${requestIP}`);
-    console.log(`Local IP: ${localIP}`);
-    console.log(`Forwarding URL: ${TARGET_API_URL}`);
-    console.log(" ");
-
-    // Forward the request body to the target API
     const response = await axios.post(TARGET_API_URL, req.body, {
       headers: {
         "Content-Type": "application/json",
       },
     });
 
-    console.log(`Server Response: ${JSON.stringify(response.data)}`);
+    logger.info(`Server Response: ${JSON.stringify(response.data)}`); // Log successful responses
 
     res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("Error forwarding request:", error.message);
+    logger.error("Error forwarding request:", error); // Log errors with stack trace
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
+app.listen(PORT, () => {
+  logger.info(`Proxy server is running...`);
+  console.log(`Proxy server is running...`);
+});
