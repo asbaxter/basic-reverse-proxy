@@ -3,8 +3,8 @@ require("dotenv").config();
 const axios = require("axios");
 const rateLimit = require("express-rate-limit");
 const winston = require("winston");
+require("winston-daily-rotate-file");
 
-// Winston logger configuration
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
@@ -12,8 +12,12 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    new winston.transports.File({
-      filename: "proxy.log",
+    new winston.transports.DailyRotateFile({
+      filename: "proxy-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxFiles: "60d",
+      dirname: "/basic-reverse-proxy/logs",
     }),
   ],
 });
@@ -43,7 +47,7 @@ const authenticateApiKey = (req, res, next) => {
   if (apiKey && apiKey === API_KEY) {
     next();
   } else {
-    logger.warn(`Unauthorized Request IP: ${requestIP}`); // Log unauthorized attempts
+    logger.warn(`Unauthorized Request IP: ${requestIP}`);
     res.status(401).json({ message: "Unauthorized" });
   }
 };
@@ -59,11 +63,11 @@ app.post("/post", authenticateApiKey, async (req, res) => {
       },
     });
 
-    logger.info(`Server Response: ${JSON.stringify(response.data)}`); // Log successful responses
+    logger.info(`Server Response: ${JSON.stringify(response.data)}`);
 
     res.status(response.status).json(response.data);
   } catch (error) {
-    logger.error("Error forwarding request:", error); // Log errors with stack trace
+    logger.error("Error forwarding request:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
