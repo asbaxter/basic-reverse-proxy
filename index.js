@@ -1,9 +1,7 @@
 const express = require("express");
 require("dotenv").config();
-const axios = require("axios");
 const rateLimit = require("express-rate-limit");
 const winston = require("winston");
-const https = require("https");
 require("winston-daily-rotate-file");
 
 const logger = winston.createLogger({
@@ -65,24 +63,23 @@ app.post("/post", authenticateApiKey, async (req, res) => {
       "base64"
     )}`;
 
-    const agent = new https.Agent({
-      rejectUnauthorized: false, // Ignore SSL certificate validation
-    });
-
-    const response = await axios.get(TARGET_API_URL, {
+    const response = await fetch(TARGET_API_URL, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: authHeader,
       },
-      httpsAgent: agent, // Pass the agent
     });
 
-    console.log(`Server Response: ${JSON.stringify(response.data)}`);
-    logger.info(`Server Response: ${JSON.stringify(response.data)}`);
-    res.status(response.status).json(response.data);
+    const data = await response.json();
+    console.log(`Server Response: ${JSON.stringify(data)}`);
+    logger.info(`Server Response: ${JSON.stringify(data)}`);
+
+    res.status(response.status).json(data);
   } catch (error) {
-    console.log(error);
-    logger.error(error);
+    console.error(`Error: ${error.message}`);
+    logger.error("Error forwarding request:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
