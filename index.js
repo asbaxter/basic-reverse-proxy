@@ -3,6 +3,7 @@ require("dotenv").config();
 const axios = require("axios");
 const rateLimit = require("express-rate-limit");
 const winston = require("winston");
+const https = require("https");
 require("winston-daily-rotate-file");
 
 const logger = winston.createLogger({
@@ -64,11 +65,16 @@ app.post("/post", authenticateApiKey, async (req, res) => {
       "base64"
     )}`;
 
+    const agent = new https.Agent({
+      rejectUnauthorized: false, // Ignore SSL certificate validation
+    });
+
     const response = await axios.get(TARGET_API_URL, {
       headers: {
         "Content-Type": "application/json",
         Authorization: authHeader,
       },
+      httpsAgent: agent, // Pass the agent
     });
 
     console.log(`Server Response: ${JSON.stringify(response.data)}`);
