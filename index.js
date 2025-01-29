@@ -72,6 +72,7 @@ app.post("/post", authenticateApiKey, async (req, res) => {
     });
 
     logger.info(`Server Response: ${JSON.stringify(response.data)}`);
+    console.log(`Server Response: ${JSON.stringify(response.data)}`);
     res.status(response.status).json(response.data);
   } catch (error) {
     logger.error("Error forwarding request:", error);
