@@ -58,14 +58,20 @@ app.use(limiter);
 
 app.post("/post", authenticateApiKey, async (req, res) => {
   try {
+    const username = process.env.USERNAME;
+    const password = process.env.PASSWORD;
+    const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString(
+      "base64"
+    )}`;
+
     const response = await axios.post(TARGET_API_URL, req.body, {
       headers: {
         "Content-Type": "application/json",
+        Authorization: authHeader,
       },
     });
 
     logger.info(`Server Response: ${JSON.stringify(response.data)}`);
-
     res.status(response.status).json(response.data);
   } catch (error) {
     logger.error("Error forwarding request:", error);
