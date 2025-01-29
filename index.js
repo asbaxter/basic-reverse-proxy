@@ -56,7 +56,7 @@ const authenticateApiKey = (req, res, next) => {
 app.use(express.json());
 app.use(limiter);
 
-app.get("/post", authenticateApiKey, async (req, res) => {
+app.post("/post", authenticateApiKey, async (req, res) => {
   try {
     const username = process.env.USERNAME;
     const password = process.env.PASSWORD;
@@ -64,7 +64,7 @@ app.get("/post", authenticateApiKey, async (req, res) => {
       "base64"
     )}`;
 
-    const response = await axios.post(TARGET_API_URL, {
+    const response = await axios.get(TARGET_API_URL, {
       headers: {
         "Content-Type": "application/json",
         Authorization: authHeader,
