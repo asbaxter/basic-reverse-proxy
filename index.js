@@ -82,8 +82,7 @@ app.post("/post", authenticateApiKey, async (req, res) => {
     res.status(response.status).json(response.data);
   } catch (error) {
     console.log(error);
-    logger.error("Error forwarding request:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    logger.error(error);
   }
 });
 
