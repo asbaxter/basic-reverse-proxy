@@ -55,7 +55,7 @@ const authenticateApiKey = (req, res, next) => {
 app.use(express.json());
 app.use(limiter);
 
-app.post("/post", authenticateApiKey, async (req, res) => {
+app.post("/get", authenticateApiKey, async (req, res) => {
   try {
     const username = process.env.USERNAME;
     const password = process.env.PASSWORD;
