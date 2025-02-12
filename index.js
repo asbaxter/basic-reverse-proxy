@@ -4,6 +4,22 @@ const rateLimit = require("express-rate-limit");
 const winston = require("winston");
 require("winston-daily-rotate-file");
 
+// *** CHANGES START HERE ***
+// Configure console logging with the same format as file logging
+const consoleTransport = new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json(), // Use JSON format for consistency
+    winston.format.printf(({ timestamp, level, message, ...meta }) => {
+      // Custom printf to format JSON
+      return `${timestamp} ${level.toUpperCase()}: ${message} ${
+        Object.keys(meta).length ? JSON.stringify(meta) : ""
+      }`;
+    })
+  ),
+});
+// *** CHANGES END HERE ***
+
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
@@ -18,6 +34,8 @@ const logger = winston.createLogger({
       maxFiles: "60d",
       dirname: process.env.LOGS_PATH,
     }),
+    // *** ADDED THIS LINE ***
+    consoleTransport, // Add the console transport
   ],
 });
 
@@ -72,18 +90,24 @@ app.post("/get", authenticateApiKey, async (req, res) => {
     });
 
     const data = await response.json();
-    console.log(`Server Response: ${JSON.stringify(data)}`);
-    logger.info(`Server Response: ${JSON.stringify(data)}`);
+    // *** CHANGES START HERE ***
+    console.log(`Server Response: ${JSON.stringify(data, null, 2)}`); // Pretty print JSON for console
+    logger.info("Server Response:", data); // Log the object, winston will format it as JSON
+    // *** CHANGES END HERE ***
 
     res.status(response.status).json(data);
   } catch (error) {
-    console.error(`Error: ${error}`);
-    logger.error("Error forwarding request:", error);
+    // *** CHANGES START HERE ***
+    console.error("Error:", error); // Keep the original error for console
+    logger.error("Error forwarding request:", error); // Log the error object
+    // *** CHANGES END HERE ***
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 app.listen(PORT, () => {
-  logger.info(`Proxy server is running...`);
-  console.log(`Proxy server is running...`);
+  // *** CHANGES START HERE ***
+  logger.info("Proxy server is running..."); // Use logger for consistent messages
+  console.log("Proxy server is running...");
+  // *** CHANGES END HERE ***
 });
