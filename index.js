@@ -89,9 +89,7 @@ app.post("/get", authenticateApiKey, async (req, res) => {
       },
     });
 
-    const data = await response;
-    console.log(data);
-    //const data = await response.json();
+    const data = await response.json();
 
     console.log(`Server Response: ${JSON.stringify(data, null, 2)}`); // Pretty print JSON for console
     logger.info("Server Response:", data); // Log the object, winston will format it as JSON
