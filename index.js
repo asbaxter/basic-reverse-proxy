@@ -4,9 +4,9 @@ const rateLimit = require("express-rate-limit");
 const winston = require("winston");
 require("winston-daily-rotate-file");
 
+//REMOVE in production
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
-// *** CHANGES START HERE ***
 // Configure console logging with the same format as file logging
 const consoleTransport = new winston.transports.Console({
   format: winston.format.combine(
@@ -20,7 +20,6 @@ const consoleTransport = new winston.transports.Console({
     })
   ),
 });
-// *** CHANGES END HERE ***
 
 const logger = winston.createLogger({
   level: "info",
@@ -36,8 +35,7 @@ const logger = winston.createLogger({
       maxFiles: "60d",
       dirname: process.env.LOGS_PATH,
     }),
-    // *** ADDED THIS LINE ***
-    consoleTransport, // Add the console transport
+    consoleTransport,
   ],
 });
 
@@ -91,25 +89,22 @@ app.post("/get", authenticateApiKey, async (req, res) => {
       },
     });
 
-    const data = await response.json();
-    // *** CHANGES START HERE ***
+    const data = await response;
+    console.log(data);
+    //const data = await response.json();
+
     console.log(`Server Response: ${JSON.stringify(data, null, 2)}`); // Pretty print JSON for console
     logger.info("Server Response:", data); // Log the object, winston will format it as JSON
-    // *** CHANGES END HERE ***
 
     res.status(response.status).json(data);
   } catch (error) {
-    // *** CHANGES START HERE ***
     console.error("Error:", error); // Keep the original error for console
     logger.error("Error forwarding request:", error); // Log the error object
-    // *** CHANGES END HERE ***
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 app.listen(PORT, () => {
-  // *** CHANGES START HERE ***
-  logger.info("Proxy server is running..."); // Use logger for consistent messages
+  logger.info("Proxy server is running...");
   console.log("Proxy server is running...");
-  // *** CHANGES END HERE ***
 });
