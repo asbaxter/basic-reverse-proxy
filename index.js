@@ -75,10 +75,9 @@ app.use(limiter);
 
 app.post("/get", authenticateApiKey, async (req, res) => {
   try {
-    //const username = process.env.USERNAME;
-    //const password = process.env.PASSWORD;
-    const password = "";
-    const username = "";
+    const username = process.env.USERNAME;
+    const password = process.env.PASSWORD;
+
     const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString(
       "base64"
     )}`;
