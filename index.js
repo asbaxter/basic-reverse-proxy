@@ -5,7 +5,7 @@ const winston = require("winston");
 require("winston-daily-rotate-file");
 
 //REMOVE in production
-//process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 // Configure console logging with the same format as file logging
 const consoleTransport = new winston.transports.Console({
